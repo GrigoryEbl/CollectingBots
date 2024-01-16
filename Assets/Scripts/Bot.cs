@@ -15,6 +15,7 @@ public class Bot : MonoBehaviour
     private void Awake()
     {
         _mover = GetComponent<Mover>();
+
     }
 
     private void Start()
@@ -27,15 +28,6 @@ public class Bot : MonoBehaviour
         DeliveredResource();
     }
 
-    private void DeliveredResource()
-    {
-        if (_target.parent == transform && transform.position == _base.transform.position)
-        {
-            _base.TakeResource();
-            Destroy(_target.gameObject);
-        }
-    }
-
     private void OnEnable()
     {
         _mover.RichTarget += OnCatchResource;
@@ -44,6 +36,17 @@ public class Bot : MonoBehaviour
     private void OnDisable()
     {
         _mover.RichTarget -= OnCatchResource;
+    }
+
+    private void DeliveredResource()
+    {
+        Resource resource = GetComponentInChildren<Resource>();
+
+        if (resource != null && transform.position == _base.transform.position)
+        {
+            _base.TakeResource();
+            Destroy(resource.gameObject);
+        }
     }
 
     private void OnCatchResource()

@@ -14,9 +14,14 @@ public class Mover : MonoBehaviour
 
     public event UnityAction RichTarget;
 
-    private void Start()
+    private void Awake()
     {
         _bot = GetComponent<Bot>();
+
+    }
+
+    private void Start()
+    {
         _transform = transform;
     }
 
@@ -24,13 +29,19 @@ public class Mover : MonoBehaviour
     {
         Transform target = _bot.Target;
 
-        _transform.position = Vector3.MoveTowards(_transform.position, target.position, _speed * Time.deltaTime);
-        _transform.LookAt(target);
-
-        if (Vector3.Distance( _transform.position, target.position) <= _minCatchDistance)
+        if (target != null)
         {
-            RichTarget?.Invoke();
-            print("Rich");
+            _transform.position = Vector3.MoveTowards(_transform.position, target.position, _speed * Time.deltaTime);
+            _transform.LookAt(target);
+
+            if (Vector3.Distance(_transform.position, target.position) <= _minCatchDistance)
+            {
+                RichTarget?.Invoke();
+                print("Rich");
+            }
         }
+        else
+            print("Target null");
+
     }
 }

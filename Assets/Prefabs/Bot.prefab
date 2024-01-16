@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 364825309348582616}
   - component: {fileID: 2180156757652463302}
   - component: {fileID: 2587979747527341295}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Bot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 8466892425698103646}
   - component: {fileID: 454004913263061893}
   - component: {fileID: 6569548969419257697}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: forward
   m_TagString: Untagged
   m_Icon: {fileID: 0}
