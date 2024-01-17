@@ -17,7 +17,6 @@ public class Mover : MonoBehaviour
     private void Awake()
     {
         _bot = GetComponent<Bot>();
-
     }
 
     private void Start()
@@ -37,11 +36,8 @@ public class Mover : MonoBehaviour
             if (Vector3.Distance(_transform.position, target.position) <= _minCatchDistance)
             {
                 RichTarget?.Invoke();
-                print("Rich");
             }
         }
-        else
-            print("Target null");
 
     }
 }

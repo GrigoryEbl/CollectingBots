@@ -15,8 +15,8 @@ public class ResourceView : MonoBehaviour
         _text = GetComponentInChildren<TMP_Text>();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        _text.text = ($"Resources: {_base.CountResources} \n Free bots: {_base.FreeBots}");
+        _text.text = ($"Resources: {_base.CountResources}");
     }
 }
