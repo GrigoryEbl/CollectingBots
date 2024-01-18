@@ -6,9 +6,11 @@ public class Base : MonoBehaviour
 {
     [SerializeField] private LayerMask _botLayer;
     [SerializeField] private LayerMask _resourceLayer;
+    [SerializeField] private Bot _prefab;
 
     private Transform _transform;
     private int _countResources;
+    private int _minCountResourcesForCreate = 3;
 
     private float _baseRadius = 10f;
     private float _scanRadius = 50f;
@@ -23,11 +25,15 @@ public class Base : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (_countResources >= _minCountResourcesForCreate)
+            CreateNewUnit();
+
         Collider[] bots = Physics.OverlapSphere(_transform.position, _baseRadius, _botLayer);
         Collider[] resources = Physics.OverlapSphere(_transform.position, _scanRadius, _resourceLayer);
 
-        if (bots != null && resources != null)
+        if (bots != null)
             SetTask(bots, resources);
+
     }
 
     private void OnDrawGizmos()
@@ -45,17 +51,29 @@ public class Base : MonoBehaviour
 
     private void SetTask(Collider[] bots, Collider[] resources)
     {
-        for (int i = 0; i < bots.Length; i++)
+        if (resources == null)
+            return;
+
+        for (int j = 0; j < resources.Length; j++)
         {
-            if (bots[i].TryGetComponent(out Bot bot) && bot.IsFree)
+            if (resources[j].TryGetComponent(out Resource resource))
             {
-                if (resources != null && resources[i].TryGetComponent(out Resource resource))
+                if (bots[j].TryGetComponent(out Bot bot) && bot.IsFree)
                 {
-                    bot.GetTargetPosition(resources[i].transform);
-                    Destroy(resources[i]);
-                    print(resources.Length);
+                    bot.GetTargetPosition(resources[j].transform);
+                    Destroy(resources[j]);
                 }
+                else
+                    break;
             }
+            else
+                break;
         }
+    }
+
+    private void CreateNewUnit()
+    {
+        _countResources -= _minCountResourcesForCreate;
+        Instantiate(_prefab, transform.position, Quaternion.identity, transform);
     }
 }

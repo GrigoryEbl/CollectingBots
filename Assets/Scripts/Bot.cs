@@ -12,18 +12,15 @@ public class Bot : MonoBehaviour
     private Transform _transform;
     private Mover _mover;
     private bool _isFree;
-    private Transform _startPosition;
 
     public bool IsFree => _isFree;
     public Transform Target => _target;
-    public Transform StartPosition => _startPosition;
 
     private void Awake()
     {
         _transform = transform;
         _mover = GetComponent<Mover>();
         _isFree = true;
-        _startPosition = transform;
     }
 
     private void Start()
