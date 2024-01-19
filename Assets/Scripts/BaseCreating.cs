@@ -6,30 +6,43 @@ using UnityEngine;
 public class BaseCreating : MonoBehaviour
 {
     [SerializeField] private GameObject _flag;
+    [SerializeField] private LayerMask _layerMask;
+    [SerializeField] private float _minDistnceToOtherBase = 15f;
 
     private Camera _camera;
-    private Base _base;
-    private float _minDistnceToOtherBase = 30f;
 
-    private void Awake()
+    private void Start()
     {
         _camera = GetComponent<Camera>();
-        _base = FindObjectOfType<Base>();
     }
 
-    private void Update()
+    public void Create()
     {
-        Create();
-    }
-
-    private void Create()
-    {
-        Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out RaycastHit hitInfo))
+        if (Input.GetMouseButtonDown(0))
         {
-            if (Input.GetMouseButtonDown(0) && hitInfo.collider.TryGetComponent(out Base station) ==false)
-                Instantiate(_flag, hitInfo.point, Quaternion.identity);//new Vector3(hitInfo.point.x, hitInfo.point.y, hitInfo.point.z)
+
+            Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out RaycastHit hitInfo))
+            {
+                Collider[] colliders = Physics.OverlapSphere(hitInfo.point, _minDistnceToOtherBase, _layerMask);
+
+                foreach (Collider item in colliders)
+                {
+                    print(item.name);
+
+                    if (item.TryGetComponent<Base>(out Base basee))
+                    {
+                        print("NOT");
+                        return;
+                    }
+                    else
+                    {
+                        Instantiate(_flag, hitInfo.point, Quaternion.identity);
+                        print("rich create flag");
+                    }
+                }
+            }
         }
     }
 }

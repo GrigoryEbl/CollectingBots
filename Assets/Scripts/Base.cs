@@ -7,13 +7,13 @@ public class Base : MonoBehaviour
     [SerializeField] private LayerMask _botLayer;
     [SerializeField] private LayerMask _resourceLayer;
     [SerializeField] private Bot _prefab;
+    [SerializeField] private float _baseRadius = 10f;
+    [SerializeField] private float _scanRadius = 50f;
 
     private Transform _transform;
+    private BaseCreating _baseCreating;
     private int _countResources;
     private int _minCountResourcesForCreate = 3;
-
-    private float _baseRadius = 10f;
-    private float _scanRadius = 50f;
 
     public int CountResources => _countResources;
 
@@ -21,6 +21,7 @@ public class Base : MonoBehaviour
     {
         _countResources = 0;
         _transform = transform;
+        _baseCreating = FindObjectOfType<BaseCreating>();
     }
 
     private void FixedUpdate()
@@ -42,6 +43,15 @@ public class Base : MonoBehaviour
 
         Gizmos.DrawWireSphere(transform.position, _baseRadius);
         Gizmos.DrawWireSphere(transform.position, _scanRadius);
+    }
+
+    private void OnMouseDown()
+    {
+        if(_countResources >= 5)
+        {
+            print("try create base");
+        _baseCreating.Create();
+        }
     }
 
     public void TakeResource()
@@ -73,6 +83,9 @@ public class Base : MonoBehaviour
 
     private void CreateNewUnit()
     {
+        if (transform.childCount > 10)
+            return;
+
         _countResources -= _minCountResourcesForCreate;
         Instantiate(_prefab, transform.position, Quaternion.identity, transform);
     }

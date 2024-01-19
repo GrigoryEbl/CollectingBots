@@ -22,7 +22,7 @@ public class Spawner : MonoBehaviour
 
     private IEnumerator Spawn(WaitForSeconds timeBetweenSpawns)
     {
-        for (int i = 0; i < _count; i++)
+        while(true)
         {
             InstantiateResource();
             yield return timeBetweenSpawns;
