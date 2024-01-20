@@ -12,12 +12,19 @@ public class Spawner : MonoBehaviour
     private Transform _transform;
     private WaitForSeconds _sleepTime;
 
-    private void Start()
+    private void Awake()
     {
         _transform = transform;
         _sleepTime = new WaitForSeconds(_delay);
 
         StartCoroutine(Spawn(_sleepTime));
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.blue;
+
+        Gizmos.DrawWireSphere(transform.position, _spawnRadius);
     }
 
     private IEnumerator Spawn(WaitForSeconds timeBetweenSpawns)
@@ -27,13 +34,6 @@ public class Spawner : MonoBehaviour
             InstantiateResource();
             yield return timeBetweenSpawns;
         }
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.blue;
-
-        Gizmos.DrawWireSphere(transform.position, _spawnRadius);
     }
 
     private void InstantiateResource()

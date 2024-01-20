@@ -16,6 +16,8 @@ public class Bot : MonoBehaviour
     public bool IsFree => _isFree;
     public Transform Target => _target;
 
+    public event UnityAction ReachedFlag;
+
     private void Awake()
     {
         _transform = transform;
@@ -35,19 +37,19 @@ public class Bot : MonoBehaviour
 
     private void OnEnable()
     {
-        _mover.RichTarget += OnCatchResource;
+        _mover.ReachTarget += OnReachedTarget;
     }
 
     private void OnDisable()
     {
-        _mover.RichTarget -= OnCatchResource;
+        _mover.ReachTarget -= OnReachedTarget;
     }
 
     private void DeliveredResource()
     {
         Resource resource = GetComponentInChildren<Resource>();
 
-        if (resource != null && _transform.position == _base.transform.position)
+        if (resource != null && _transform.position == transform.parent.position)
         {
             _base.TakeResource();
             Destroy(resource.gameObject);
@@ -55,10 +57,19 @@ public class Bot : MonoBehaviour
         }
     }
 
-    private void OnCatchResource()
+    private void OnReachedTarget()
     {
-        _target.parent = transform;
-        _target = _base.transform;
+        if (_target.TryGetComponent(out Resource resource))
+        {
+            _target.parent = transform;
+            _target = transform.parent;
+        }
+        else if (_target.TryGetComponent(out Flag flag))
+        {
+            ReachedFlag?.Invoke();
+            _isFree = true;
+            print("Reached Flag");
+        }
     }
 
     public void GetTargetPosition(Transform target)

@@ -11,7 +11,7 @@ public class ResourceView : MonoBehaviour
 
     private void Start()
     {
-        _base = FindObjectOfType<Base>();
+        _base = GetComponentInParent<Base>();
         _text = GetComponentInChildren<TMP_Text>();
     }
 
