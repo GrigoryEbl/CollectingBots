@@ -14,8 +14,9 @@ public class BaseCreator : MonoBehaviour
 
     private Camera _camera;
     private bool _isSelectedBase;
+    private Flag _tempFlag;
 
-    public Flag Flag => _flagPrefab;
+    public Flag Flag => _tempFlag;
 
     public event UnityAction FlagCreated;
 
@@ -80,21 +81,27 @@ public class BaseCreator : MonoBehaviour
 
     private void CreateFlag(RaycastHit hitInfo)
     {
-        Instantiate(_flagPrefab, hitInfo.point, Quaternion.identity);
+       var flag = Instantiate(_flagPrefab, hitInfo.point, Quaternion.identity);
         FlagCreated?.Invoke();
         _isSelectedBase = false;
-
+        _tempFlag = flag;
         print("Created flag");
     }
 
     private void OnBuildBase()
     {
-        Flag flag = FindObjectOfType<Flag>();
-        _basePrefab = Instantiate(_basePrefab, Flag.transform.position, Quaternion.identity);
-        flag.transform.parent = _basePrefab.transform;
-        Destroy(flag.gameObject);
+        var basee = Instantiate(_basePrefab, _tempFlag.transform.position, Quaternion.identity);
+        Destroy(_tempFlag);
 
         print("Created new base");
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+
+        Gizmos.DrawLine(transform.position, _tempFlag.transform.position);
+        
     }
 }
 

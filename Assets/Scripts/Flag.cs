@@ -4,15 +4,8 @@ using UnityEngine;
 
 public class Flag : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public void DestroyObject()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Destroy(transform.gameObject);
     }
 }

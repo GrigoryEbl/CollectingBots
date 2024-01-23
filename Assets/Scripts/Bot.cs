@@ -60,7 +60,6 @@ public class Bot : MonoBehaviour
         }
         else if (_target.TryGetComponent(out Flag flag))
         {
-            transform.parent = null;
             _isFree = true;
             print("Reached Flag");
             FlagReached?.Invoke();

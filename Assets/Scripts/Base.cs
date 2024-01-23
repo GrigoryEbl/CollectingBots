@@ -10,15 +10,16 @@ public class Base : MonoBehaviour
     [SerializeField] private float _baseRadius;
     [SerializeField] private float _scanRadius;
 
-    private Bot[] _bots;
-    private Resource[] _resources;
+    private Queue<Bot> _bots = new();
+    private Queue<Resource> _resources = new();
     private Transform _transform;
     private BaseCreator _baseCtreator;
     private int _countResources;
     private int _countResourcesToBuildBase = 5;
     private int _minCountResourcesToCreate = 3;
     private int _maxUnits = 5;
-    private float _scanDelay = 3f;
+    private int _currentCountBots = 0;
+    private float _scanDelay = 2f;
 
     private bool _canBuildBase;
 
@@ -35,14 +36,17 @@ public class Base : MonoBehaviour
     private void Start()
     {
         SetParentBot();
+        GetBots();
+        _currentCountBots = _bots.Count;
         StartCoroutine(Scan());
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
-        if (_bots.Length < _maxUnits && _canBuildBase == false)
+        if (_currentCountBots < _maxUnits && _canBuildBase == false)
             CreateNewUnit();
 
+        GetBots();
         SetTask();
     }
 
@@ -75,18 +79,13 @@ public class Base : MonoBehaviour
 
     private IEnumerator Scan()
     {
-        Collider[] botColliders = Physics.OverlapSphere(_transform.position, _baseRadius, _botLayer);
-        Collider[] resourceColliders = Physics.OverlapSphere(_transform.position, _scanRadius, _resourceLayer);
-
-        if (botColliders != null && resourceColliders != null)
+        while (true)
         {
-            GetBots();
+            Collider[] resourceColliders = Physics.OverlapSphere(_transform.position, _scanRadius, _resourceLayer);
             GetAvailableResource(resourceColliders);
+
+            yield return new WaitForSeconds(_scanDelay);
         }
-            
-
-        yield return new WaitForSeconds(_scanDelay);
-
     }
 
     public void TakeResource()
@@ -96,53 +95,64 @@ public class Base : MonoBehaviour
 
     private void SetTask()
     {
-        for (int i = 0; i < _bots.Length; i++)
+        for (int i = 0; i < _bots.Count; i++)
         {
-            if (_bots[i].IsFree)
+            if (_bots.Peek().IsFree)
             {
-                if (_resources[i].IsOrdered == false && _resources[i] != null)
+                if (_resources.Peek() != null && _resources.Peek().IsOrdered == false)
                 {
-                    _resources[i].IsOrdered = true;
-                    _bots[i].GetTargetPosition(_resources[i].transform);
-                    Destroy(_resources[i]);
+                    _bots.Peek().GetTargetPosition(_resources.Peek().transform);
+                    _resources.Dequeue().IsOrdered = true;
+                }
+
+                if (_canBuildBase && _countResources >= _countResourcesToBuildBase)
+                {
+                    SendBotToBuildBase(_bots.Peek());
+                    return;
                 }
             }
 
-            if (_canBuildBase && _countResources >= _countResourcesToBuildBase)
-            {
-                Destroy(_resources[i].gameObject);
-                SendBotToBuildBase(_bots[i]);
-            }
+            _bots.Dequeue();
         }
     }
+
     private void CreateNewUnit()
     {
         if (_countResources >= _minCountResourcesToCreate)
         {
             _countResources -= _minCountResourcesToCreate;
             Instantiate(_prefab, transform.position, Quaternion.identity, transform);
+            GetBots();
+            _currentCountBots = _bots.Count;
         }
     }
 
     private void GetBots()
     {
+        _bots.Clear();
+
         for (int i = 0; i < transform.childCount; i++)
         {
             if (transform.GetChild(i).TryGetComponent(out Bot bot))
             {
                 if (Vector3.Distance(bot.transform.position, _transform.position) <= _baseRadius)
-                    _bots[i] = bot;
+                    _bots.Enqueue(bot);
             }
         }
     }
 
     private void GetAvailableResource(Collider[] resources)
     {
-        for (int i = 0; i < resources.Length; i++)
+        if (resources != null)
         {
-            if (resources[i].TryGetComponent(out Resource resource))
+            _resources.Clear();
+
+            for (int i = 0; i < resources.Length; i++)
             {
-                _resources[i] = resource;
+                if (resources[i].TryGetComponent(out Resource resource))
+                {
+                    _resources.Enqueue(resource);
+                }
             }
         }
     }
@@ -156,6 +166,7 @@ public class Base : MonoBehaviour
             if (item.TryGetComponent(out Bot bot))
             {
                 bot.transform.parent = transform;
+                return;
             }
         }
     }
@@ -167,8 +178,16 @@ public class Base : MonoBehaviour
 
     private void SendBotToBuildBase(Bot bot)
     {
+        _canBuildBase = false;
         _countResources -= _countResourcesToBuildBase;
         bot.GetTargetPosition(_baseCtreator.Flag.transform);
-        _canBuildBase = false;
+
+        for (int i = 0; i < bot.transform.childCount; i++)
+        {
+            if (bot.transform.GetChild(i).TryGetComponent(out Resource resource))
+            {
+                Destroy(resource);
+            }
+        }
     }
 }
