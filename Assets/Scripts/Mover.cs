@@ -12,7 +12,7 @@ public class Mover : MonoBehaviour
     private Transform _transform;
     private float _minCatchDistance = 2;
 
-    public event UnityAction ReachTarget;
+    public event UnityAction TargetReached;
 
     private void Awake()
     {
@@ -34,9 +34,7 @@ public class Mover : MonoBehaviour
             _transform.LookAt(target);
 
             if (Vector3.Distance(_transform.position, target.position) <= _minCatchDistance)
-            {
-                ReachTarget?.Invoke();
-            }
+                TargetReached?.Invoke();
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.Events;
@@ -10,14 +11,13 @@ public class BaseCreator : MonoBehaviour
     [SerializeField] private Base _basePrefab;
     [SerializeField] private LayerMask _layerMask;
     [SerializeField] private float _minDistanceToOtherBase;
-    [SerializeField] private Bot _bot;
 
     private Camera _camera;
     private bool _isSelectedBase;
 
-    public Transform Flag => _flagPrefab.transform;
+    public Flag Flag => _flagPrefab;
 
-    public event UnityAction CreatedNewFlag;
+    public event UnityAction FlagCreated;
 
     private void Start()
     {
@@ -36,19 +36,19 @@ public class BaseCreator : MonoBehaviour
 
     private void OnEnable()
     {
-        _bot.ReachedFlag += OnBuildBase;
+        Bot.FlagReached += OnBuildBase;
     }
 
     private void OnDisable()
     {
-        _bot.ReachedFlag -= OnBuildBase;
+        Bot.FlagReached -= OnBuildBase;
     }
 
     public void SelectBase()
     {
         if (_isSelectedBase)
         {
-            print("База уже выбрана, поставтье флаг");
+            print("Установите флаг в новое место");
             return;
         }
         else
@@ -80,16 +80,20 @@ public class BaseCreator : MonoBehaviour
 
     private void CreateFlag(RaycastHit hitInfo)
     {
-        _flagPrefab = Instantiate(_flagPrefab, hitInfo.point, Quaternion.identity);
-        CreatedNewFlag?.Invoke();
+        Instantiate(_flagPrefab, hitInfo.point, Quaternion.identity);
+        FlagCreated?.Invoke();
         _isSelectedBase = false;
+
         print("Created flag");
     }
 
     private void OnBuildBase()
     {
-        _basePrefab = Instantiate(_basePrefab, _flagPrefab.transform.position, Quaternion.identity);
-        Destroy(_flagPrefab.gameObject);
+        Flag flag = FindObjectOfType<Flag>();
+        _basePrefab = Instantiate(_basePrefab, Flag.transform.position, Quaternion.identity);
+        flag.transform.parent = _basePrefab.transform;
+        Destroy(flag.gameObject);
+
         print("Created new base");
     }
 }

@@ -8,7 +8,6 @@ using UnityEngine.Events;
 public class Bot : MonoBehaviour
 {
     private Transform _target;
-    private Base _base;
     private Transform _transform;
     private Mover _mover;
     private bool _isFree;
@@ -16,18 +15,13 @@ public class Bot : MonoBehaviour
     public bool IsFree => _isFree;
     public Transform Target => _target;
 
-    public event UnityAction ReachedFlag;
+    public static event Action FlagReached;
 
     private void Awake()
     {
         _transform = transform;
         _mover = GetComponent<Mover>();
         _isFree = true;
-    }
-
-    private void Start()
-    {
-        _base = GetComponentInParent<Base>();
     }
 
     private void Update()
@@ -37,21 +31,21 @@ public class Bot : MonoBehaviour
 
     private void OnEnable()
     {
-        _mover.ReachTarget += OnReachedTarget;
+        _mover.TargetReached += OnReachedTarget;
     }
 
     private void OnDisable()
     {
-        _mover.ReachTarget -= OnReachedTarget;
+        _mover.TargetReached -= OnReachedTarget;
     }
 
     private void DeliveredResource()
     {
         Resource resource = GetComponentInChildren<Resource>();
 
-        if (resource != null && _transform.position == transform.parent.position)
+        if (resource != null && _transform.position == transform.parent.position && transform.parent.TryGetComponent(out Base basee))
         {
-            _base.TakeResource();
+            basee.TakeResource();
             Destroy(resource.gameObject);
             _isFree = true;
         }
@@ -66,9 +60,10 @@ public class Bot : MonoBehaviour
         }
         else if (_target.TryGetComponent(out Flag flag))
         {
-            ReachedFlag?.Invoke();
+            transform.parent = null;
             _isFree = true;
             print("Reached Flag");
+            FlagReached?.Invoke();
         }
     }
 

@@ -7,15 +7,18 @@ public class Base : MonoBehaviour
     [SerializeField] private LayerMask _botLayer;
     [SerializeField] private LayerMask _resourceLayer;
     [SerializeField] private Bot _prefab;
-    [SerializeField] private float _baseRadius = 10f;
-    [SerializeField] private float _scanRadius = 50f;
+    [SerializeField] private float _baseRadius;
+    [SerializeField] private float _scanRadius;
 
+    private Bot[] _bots;
+    private Resource[] _resources;
     private Transform _transform;
     private BaseCreator _baseCtreator;
     private int _countResources;
     private int _countResourcesToBuildBase = 5;
     private int _minCountResourcesToCreate = 3;
-    private int _maxUnits = 10;
+    private int _maxUnits = 5;
+    private float _scanDelay = 3f;
 
     private bool _canBuildBase;
 
@@ -32,18 +35,15 @@ public class Base : MonoBehaviour
     private void Start()
     {
         SetParentBot();
+        StartCoroutine(Scan());
     }
 
     private void FixedUpdate()
     {
-        if (_countResources >= _minCountResourcesToCreate)
+        if (_bots.Length < _maxUnits && _canBuildBase == false)
             CreateNewUnit();
 
-        Collider[] botColliders = Physics.OverlapSphere(_transform.position, _baseRadius, _botLayer);
-        Collider[] resourceColliders = Physics.OverlapSphere(_transform.position, _scanRadius, _resourceLayer);
-
-        if (botColliders != null && resourceColliders != null)
-            SetTask(botColliders, resourceColliders);
+        SetTask();
     }
 
     private void OnDrawGizmos()
@@ -65,12 +65,28 @@ public class Base : MonoBehaviour
 
     private void OnEnable()
     {
-        _baseCtreator.CreatedNewFlag += OnBuildNewBase;
+        _baseCtreator.FlagCreated += OnBuildNewBase;
     }
 
     private void OnDisable()
     {
-        _baseCtreator.CreatedNewFlag -= OnBuildNewBase;
+        _baseCtreator.FlagCreated -= OnBuildNewBase;
+    }
+
+    private IEnumerator Scan()
+    {
+        Collider[] botColliders = Physics.OverlapSphere(_transform.position, _baseRadius, _botLayer);
+        Collider[] resourceColliders = Physics.OverlapSphere(_transform.position, _scanRadius, _resourceLayer);
+
+        if (botColliders != null && resourceColliders != null)
+        {
+            GetBots();
+            GetAvailableResource(resourceColliders);
+        }
+            
+
+        yield return new WaitForSeconds(_scanDelay);
+
     }
 
     public void TakeResource()
@@ -78,49 +94,57 @@ public class Base : MonoBehaviour
         _countResources++;
     }
 
-    private void SetTask(Collider[] bots, Collider[] resources)
+    private void SetTask()
     {
-        for (int i = 0; i < bots.Length; i++)
+        for (int i = 0; i < _bots.Length; i++)
         {
-            if (bots[i] != null && resources[i] != null )
+            if (_bots[i].IsFree)
             {
-                if (bots[i].TryGetComponent(out Bot bot) && bot.IsFree)
+                if (_resources[i].IsOrdered == false && _resources[i] != null)
                 {
-                    bot.GetTargetPosition(resources[i].transform);
-                    Destroy(resources[i]);
+                    _resources[i].IsOrdered = true;
+                    _bots[i].GetTargetPosition(_resources[i].transform);
+                    Destroy(_resources[i]);
                 }
-                
-                if (_canBuildBase && _countResources >= _countResourcesToBuildBase )
-                {
-                    SendBotToBuildBase(bot);
-                    Destroy(resources[i].gameObject);
-                }
+            }
+
+            if (_canBuildBase && _countResources >= _countResourcesToBuildBase)
+            {
+                Destroy(_resources[i].gameObject);
+                SendBotToBuildBase(_bots[i]);
             }
         }
     }
-
     private void CreateNewUnit()
     {
-        if (GetCountBots() < _maxUnits && _canBuildBase == false)
+        if (_countResources >= _minCountResourcesToCreate)
         {
             _countResources -= _minCountResourcesToCreate;
             Instantiate(_prefab, transform.position, Quaternion.identity, transform);
         }
     }
 
-    private int GetCountBots()
+    private void GetBots()
     {
-        int bots = 0;
-
         for (int i = 0; i < transform.childCount; i++)
         {
             if (transform.GetChild(i).TryGetComponent(out Bot bot))
             {
-                bots++;
+                if (Vector3.Distance(bot.transform.position, _transform.position) <= _baseRadius)
+                    _bots[i] = bot;
             }
         }
+    }
 
-        return bots;
+    private void GetAvailableResource(Collider[] resources)
+    {
+        for (int i = 0; i < resources.Length; i++)
+        {
+            if (resources[i].TryGetComponent(out Resource resource))
+            {
+                _resources[i] = resource;
+            }
+        }
     }
 
     private void SetParentBot()
@@ -144,7 +168,7 @@ public class Base : MonoBehaviour
     private void SendBotToBuildBase(Bot bot)
     {
         _countResources -= _countResourcesToBuildBase;
-        bot.GetTargetPosition(_baseCtreator.Flag);
+        bot.GetTargetPosition(_baseCtreator.Flag.transform);
         _canBuildBase = false;
     }
 }
