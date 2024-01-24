@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,17 +26,20 @@ public class Base : MonoBehaviour
     private float _scanDelay = 2f;
 
     private bool _canBuildBase;
-    private bool _isBotSendedToBuldNEwBase;
+    private bool _isBotSendedToBuildNewBase;
 
     public int CountResources => _countResources;
+
+    public event Action ResourcesChange;
 
     private void Awake()
     {
         _countResources = 0;
+        ResourcesChange?.Invoke();
         _transform = transform;
         _baseCtreator = FindObjectOfType<BaseCreator>();
         _canBuildBase = false;
-        _isBotSendedToBuldNEwBase = false;
+        _isBotSendedToBuildNewBase = false;
     }
 
     private void Start()
@@ -48,7 +52,7 @@ public class Base : MonoBehaviour
 
     private void Update()
     {
-        if (_isBotSendedToBuldNEwBase == false)
+        if (_isBotSendedToBuildNewBase == false)
             _canBuildBase = _baseCtreator.IsFlagCreatred;
 
         if (_currentCountBots < _maxUnits && _canBuildBase == false)
@@ -75,6 +79,7 @@ public class Base : MonoBehaviour
     public void TakeResource()
     {
         _countResources++;
+        ResourcesChange?.Invoke();
     }
 
     private IEnumerator Scan()
@@ -94,10 +99,9 @@ public class Base : MonoBehaviour
         {
             if (_bots.Peek().IsFree)
             {
-                if (_resources.TryPeek(out Resource resource) && resource.IsOrdered == false)
+                if (_resources.TryPeek(out Resource resource))
                 {
                     _bots.Peek().GetTargetPosition(resource.transform);
-                    resource.IsOrdered = true;
                     _resources.Dequeue();
                 }
 
@@ -116,6 +120,7 @@ public class Base : MonoBehaviour
         if (_countResources >= _countResourcesToCreateBot)
         {
             _countResources -= _countResourcesToCreateBot;
+            ResourcesChange?.Invoke();
             Instantiate(_prefab, transform.position, Quaternion.identity, transform);
             GetBots();
             _currentCountBots = _bots.Count;
@@ -170,8 +175,9 @@ public class Base : MonoBehaviour
     {
         print("Send bot to build");
         _canBuildBase = false;
-        _isBotSendedToBuldNEwBase = true;
+        _isBotSendedToBuildNewBase = true;
         _countResources -= _countResourcesToBuildBase;
+        ResourcesChange?.Invoke();
         bot.GetTargetPosition(_baseCtreator.Flag.transform);
 
         for (int i = 0; i < bot.transform.childCount; i++)
