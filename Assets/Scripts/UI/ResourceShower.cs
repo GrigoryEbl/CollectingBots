@@ -1,10 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class ResourceView : MonoBehaviour
+public class ResourceShower : MonoBehaviour
 {
     private Base _base;
     private TMP_Text _text;

@@ -1,24 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using UnityEngine.Events;
 
+[RequireComponent(typeof(Camera))]
 public class BaseCreator : MonoBehaviour
 {
     [SerializeField] private Flag _flagPrefab;
     [SerializeField] private Base _basePrefab;
-    [SerializeField] private LayerMask _layerMask;
     [SerializeField] private float _minDistanceToOtherBase;
+    [SerializeField] private LayerMask _layerMask;
 
     private Camera _camera;
-    private bool _isSelectedBase;
     private Flag _tempFlag;
 
-    public Flag Flag => _tempFlag;
+    private bool _isSelectedBase;
+    private bool _isFlagCreated;
 
-    public event UnityAction FlagCreated;
+    public bool IsFlagCreatred => _isFlagCreated;
+    public Flag Flag => _tempFlag;
 
     private void Start()
     {
@@ -30,7 +27,7 @@ public class BaseCreator : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (_isSelectedBase)
+            if (_isSelectedBase && _isFlagCreated == false)
                 ScanPresenceOtherBase();
         }
     }
@@ -47,10 +44,10 @@ public class BaseCreator : MonoBehaviour
 
     public void SelectBase()
     {
-        if (_isSelectedBase)
+        if (_isSelectedBase && _isFlagCreated)
         {
             print("Установите флаг в новое место");
-            return;
+            TransposeFlag();
         }
         else
         {
@@ -68,7 +65,7 @@ public class BaseCreator : MonoBehaviour
 
             foreach (Collider item in colliders)
             {
-                if (item.TryGetComponent<Base>(out Base basee))
+                if (item.TryGetComponent<Base>(out Base otherBase))
                 {
                     print("рядом есть другая база");
                     return;
@@ -81,8 +78,8 @@ public class BaseCreator : MonoBehaviour
 
     private void CreateFlag(RaycastHit hitInfo)
     {
-       var flag = Instantiate(_flagPrefab, hitInfo.point, Quaternion.identity);
-        FlagCreated?.Invoke();
+        var flag = Instantiate(_flagPrefab, hitInfo.point, Quaternion.identity);
+        _isFlagCreated = true;
         _isSelectedBase = false;
         _tempFlag = flag;
         print("Created flag");
@@ -90,18 +87,24 @@ public class BaseCreator : MonoBehaviour
 
     private void OnBuildBase()
     {
-        var basee = Instantiate(_basePrefab, _tempFlag.transform.position, Quaternion.identity);
-        Destroy(_tempFlag);
-
+        var newBase = Instantiate(_basePrefab, _tempFlag.transform.position, Quaternion.identity);
+        _tempFlag.DestroyObject();
+        _tempFlag = null;
+        _isFlagCreated = false;
         print("Created new base");
     }
 
-    private void OnDrawGizmos()
+    private void TransposeFlag()
     {
-        Gizmos.color = Color.red;
+        if (_tempFlag != null)
+        {
+            _tempFlag.DestroyObject();
+            print("Destroyed Flag");
+            _tempFlag = null;
+            _isFlagCreated = false;
+        }
 
-        Gizmos.DrawLine(transform.position, _tempFlag.transform.position);
-        
+        ScanPresenceOtherBase();
     }
 }
 

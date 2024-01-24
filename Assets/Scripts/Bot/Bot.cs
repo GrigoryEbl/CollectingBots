@@ -39,6 +39,12 @@ public class Bot : MonoBehaviour
         _mover.TargetReached -= OnReachedTarget;
     }
 
+    public void GetTargetPosition(Transform target)
+    {
+        _target = target;
+        _isFree = false;
+    }
+
     private void DeliveredResource()
     {
         Resource resource = GetComponentInChildren<Resource>();
@@ -64,11 +70,5 @@ public class Bot : MonoBehaviour
             print("Reached Flag");
             FlagReached?.Invoke();
         }
-    }
-
-    public void GetTargetPosition(Transform target)
-    {
-        _target = target;
-        _isFree = false;
     }
 }
