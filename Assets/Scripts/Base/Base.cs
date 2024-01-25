@@ -35,17 +35,14 @@ public class Base : MonoBehaviour
     private void Awake()
     {
         _countResources = 0;
-        ResourcesChange?.Invoke();
-        _transform = transform;
-        _baseCtreator = FindObjectOfType<BaseCreator>();
         _canBuildBase = false;
         _isBotSendedToBuildNewBase = false;
-    }
-
-    private void Start()
-    {
+        _transform = transform;
+        _baseCtreator = FindObjectOfType<BaseCreator>();
+        ResourcesChange?.Invoke();
         SetParentBot();
         GetBots();
+        _baseCtreator.Bot = _bots.Peek();
         _currentCountBots = _bots.Count;
         StartCoroutine(Scan());
     }
@@ -107,7 +104,7 @@ public class Base : MonoBehaviour
 
                 if (_canBuildBase && _countResources >= _countResourcesToBuildBase)
                 {
-                    SendBotToBuildBase(_bots.Peek());
+                    SendBotToBuildBase(_baseCtreator.Bot);
                 }
 
                 _bots.Dequeue();
@@ -174,13 +171,13 @@ public class Base : MonoBehaviour
 
     private void SendBotToBuildBase(Bot bot)
     {
-        print("Send bot to build");
         _canBuildBase = false;
+
+        bot.SetTargetPosition(_baseCtreator.Flag.transform);
+
         _isBotSendedToBuildNewBase = true;
         _countResources -= _countResourcesToBuildBase;
         ResourcesChange?.Invoke();
-        bot.SetTargetPosition(_baseCtreator.Flag.transform);
-        _baseCtreator.Bot = bot;
 
         for (int i = 0; i < bot.transform.childCount; i++)
         {
@@ -189,5 +186,9 @@ public class Base : MonoBehaviour
                 Destroy(resource);
             }
         }
+
+        _baseCtreator.Bot = _bots.Peek();
+
+        print("Send bot to build");
     }
 }

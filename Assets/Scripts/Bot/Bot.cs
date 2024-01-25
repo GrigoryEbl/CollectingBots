@@ -46,22 +46,21 @@ public class Bot : MonoBehaviour
 
     private void DeliveredResource()
     {
-        if (_resource.GetComponentInChildren<Resource>())
+        for (int i = 0; i < transform.childCount; i++)
         {
-            _base.TakeResource();
-            Destroy(_resource.gameObject);
-            _resource = null;
-            _isFree = true;
-        }
-        else
-        {
-            Waiting();
+            if (transform.GetChild(i).TryGetComponent(out Resource resource))
+            {
+                _base.TakeResource();
+                Destroy(resource.gameObject);
+                _resource = null;
+                _isFree = true;
+            }
         }
     }
 
     private void OnReachedTarget()
     {
-        if (_target.TryGetComponent(out Resource resource))
+        if (_target != null && _target.TryGetComponent(out Resource resource))
         {
             _resource = resource;
             _target.parent = transform;
@@ -72,15 +71,20 @@ public class Bot : MonoBehaviour
         {
             DeliveredResource();
         }
-        else if (_target.TryGetComponent(out Flag flag))
+        else if (_target != null && _target.TryGetComponent(out Flag flag))
         {
             _isFree = true;
             print("Reached Flag");
             FlagReached?.Invoke();
+            Wait();
+        }
+        else
+        {
+            return;
         }
     }
 
-    private void Waiting()
+    private void Wait()
     {
         _target = null;
     }

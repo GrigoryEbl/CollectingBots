@@ -8,7 +8,6 @@ public class BaseCreator : MonoBehaviour
     [SerializeField] private float _minDistanceToOtherBase;
     [SerializeField] private LayerMask _layerMask;
 
-    public Bot Bot;
 
     private Camera _camera;
     private Flag _tempFlag;
@@ -16,6 +15,7 @@ public class BaseCreator : MonoBehaviour
     private bool _isSelectedBase;
     private bool _isFlagCreated;
 
+    public Bot Bot { get; set; }
     public bool IsFlagCreatred => _isFlagCreated;
     public Flag Flag => _tempFlag;
 
@@ -93,6 +93,9 @@ public class BaseCreator : MonoBehaviour
         _tempFlag.DestroyObject();
         _tempFlag = null;
         _isFlagCreated = false;
+
+        Bot.transform.parent = newBase.transform;
+        Bot.SetTargetPosition(newBase.transform);
         print("Created new base");
     }
 
