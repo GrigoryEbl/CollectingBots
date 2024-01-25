@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] private Resource _resource;
+    [SerializeField] private Resource _resourcePrefab;
     [SerializeField] private float _delay;
     [SerializeField] private float _spawnRadius;
 
@@ -25,7 +25,7 @@ public class Spawner : MonoBehaviour
 
     private IEnumerator Spawn()
     {
-        while(true)
+        while (true)
         {
             InstantiateResource();
             yield return new WaitForSeconds(_delay);
@@ -34,10 +34,8 @@ public class Spawner : MonoBehaviour
 
     private void InstantiateResource()
     {
-        Vector3 position = new Vector3(Random.Range(_transform.localPosition.x - _spawnRadius, _transform.localPosition.x + _spawnRadius),
-                                        _transform.localPosition.y,
-                                        Random.Range(_transform.localPosition.z - _spawnRadius, _transform.localPosition.z + _spawnRadius));
+        Vector2 RandomPosition = Random.insideUnitCircle * _spawnRadius;
 
-        Instantiate(_resource, position, Quaternion.identity, _transform);
+        Instantiate(_resourcePrefab, new Vector3(_transform.position.x + RandomPosition.x, 0, _transform.position.z + RandomPosition.y), Quaternion.identity, _transform);
     }
 }

@@ -3,21 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-[RequireComponent(typeof(Bot))]
 public class Mover : MonoBehaviour
 {
     [SerializeField] private float _speed;
 
-    private Bot _bot;
     private Transform _transform;
     private float _minCatchDistance = 2;
 
-    public event UnityAction TargetReached;
+    public Transform Target { get; set; }
 
-    private void Awake()
-    {
-        _bot = GetComponent<Bot>();
-    }
+    public event UnityAction TargetReached;
 
     private void Start()
     {
@@ -26,15 +21,24 @@ public class Mover : MonoBehaviour
 
     private void Update()
     {
-        Transform target = _bot.Target;
+        if (Target != null)
+            StartCoroutine(MoveToTarget());
+    }
 
-        if (target != null)
+    private IEnumerator MoveToTarget()
+    {
+        _transform.position = Vector3.MoveTowards(_transform.position, Target.position, _speed * Time.deltaTime);
+        _transform.LookAt(Target);
+
+        if (Vector3.Distance(_transform.position, Target.position) <= _minCatchDistance)
         {
-            _transform.position = Vector3.MoveTowards(_transform.position, target.position, _speed * Time.deltaTime);
-            _transform.LookAt(target);
-
-            if (Vector3.Distance(_transform.position, target.position) <= _minCatchDistance)
-                TargetReached?.Invoke();
+            TargetReached?.Invoke();
+            yield return null;
         }
+    }
+
+    public void SetTarget(Transform target)
+    {
+        Target = target;
     }
 }

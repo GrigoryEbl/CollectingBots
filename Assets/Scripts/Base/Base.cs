@@ -101,7 +101,7 @@ public class Base : MonoBehaviour
             {
                 if (_resources.TryPeek(out Resource resource))
                 {
-                    _bots.Peek().GetTargetPosition(resource.transform);
+                    _bots.Peek().SetTargetPosition(resource.transform);
                     _resources.Dequeue();
                 }
 
@@ -149,9 +149,10 @@ public class Base : MonoBehaviour
 
             for (int i = 0; i < resources.Length; i++)
             {
-                if (resources[i].TryGetComponent(out Resource resource))
+                if (resources[i].TryGetComponent(out Resource resource) && resource.TryGetComponent(out Collider collider))
                 {
                     _resources.Enqueue(resource);
+                    Destroy(collider);
                 }
             }
         }
@@ -178,7 +179,8 @@ public class Base : MonoBehaviour
         _isBotSendedToBuildNewBase = true;
         _countResources -= _countResourcesToBuildBase;
         ResourcesChange?.Invoke();
-        bot.GetTargetPosition(_baseCtreator.Flag.transform);
+        bot.SetTargetPosition(_baseCtreator.Flag.transform);
+        _baseCtreator.Bot = bot;
 
         for (int i = 0; i < bot.transform.childCount; i++)
         {

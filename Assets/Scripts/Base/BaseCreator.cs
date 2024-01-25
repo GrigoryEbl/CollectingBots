@@ -8,9 +8,11 @@ public class BaseCreator : MonoBehaviour
     [SerializeField] private float _minDistanceToOtherBase;
     [SerializeField] private LayerMask _layerMask;
 
+    public Bot Bot;
+
     private Camera _camera;
     private Flag _tempFlag;
-
+    
     private bool _isSelectedBase;
     private bool _isFlagCreated;
 
@@ -65,7 +67,7 @@ public class BaseCreator : MonoBehaviour
 
             foreach (Collider item in colliders)
             {
-                if (item.TryGetComponent<Base>(out Base otherBase))
+                if (item.TryGetComponent(out Base otherBase))
                 {
                     print("рядом есть другая база");
                     return;

@@ -11,22 +11,19 @@ public class Bot : MonoBehaviour
     private Transform _transform;
     private Mover _mover;
     private bool _isFree;
+    private Base _base;
+    private Resource _resource;
 
     public bool IsFree => _isFree;
-    public Transform Target => _target;
 
-    public static event Action FlagReached;
+    public event Action FlagReached;
 
     private void Awake()
     {
         _transform = transform;
         _mover = GetComponent<Mover>();
+        _base = GetComponentInParent<Base>();
         _isFree = true;
-    }
-
-    private void Update()
-    {
-        DeliveredResource();
     }
 
     private void OnEnable()
@@ -39,21 +36,26 @@ public class Bot : MonoBehaviour
         _mover.TargetReached -= OnReachedTarget;
     }
 
-    public void GetTargetPosition(Transform target)
+    public void SetTargetPosition(Transform target)
     {
         _target = target;
         _isFree = false;
+
+        _mover.SetTarget(_target);
     }
 
     private void DeliveredResource()
     {
-        Resource resource = GetComponentInChildren<Resource>();
-
-        if (resource != null && _transform.position == transform.parent.position && transform.parent.TryGetComponent(out Base basee))
+        if (_resource.GetComponentInChildren<Resource>())
         {
-            basee.TakeResource();
-            Destroy(resource.gameObject);
+            _base.TakeResource();
+            Destroy(_resource.gameObject);
+            _resource = null;
             _isFree = true;
+        }
+        else
+        {
+            Waiting();
         }
     }
 
@@ -61,8 +63,14 @@ public class Bot : MonoBehaviour
     {
         if (_target.TryGetComponent(out Resource resource))
         {
+            _resource = resource;
             _target.parent = transform;
-            _target = transform.parent;
+            _target = _base.transform;
+            _mover.SetTarget(_target);
+        }
+        else if (_target == _base.transform)
+        {
+            DeliveredResource();
         }
         else if (_target.TryGetComponent(out Flag flag))
         {
@@ -70,5 +78,10 @@ public class Bot : MonoBehaviour
             print("Reached Flag");
             FlagReached?.Invoke();
         }
+    }
+
+    private void Waiting()
+    {
+        _target = null;
     }
 }
