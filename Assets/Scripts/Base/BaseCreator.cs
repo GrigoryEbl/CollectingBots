@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
@@ -8,20 +9,21 @@ public class BaseCreator : MonoBehaviour
     [SerializeField] private float _minDistanceToOtherBase;
     [SerializeField] private LayerMask _layerMask;
 
-
     private Camera _camera;
     private Flag _tempFlag;
-    
+
     private bool _isSelectedBase;
     private bool _isFlagCreated;
 
-    public Bot Bot { get; set; }
-    public bool IsFlagCreatred => _isFlagCreated;
+    public Bot BotColonizer { get; set; }
+    public bool IsFlagCreated => _isFlagCreated;
     public Flag Flag => _tempFlag;
+
+    public event Action BaseBuilded;
 
     private void Start()
     {
-        _camera = GetComponent<Camera>();
+        _camera = FindObjectOfType<Camera>();
         _isSelectedBase = false;
     }
 
@@ -36,12 +38,12 @@ public class BaseCreator : MonoBehaviour
 
     private void OnEnable()
     {
-        Bot.FlagReached += OnBuildBase;
+        BotColonizer.FlagReached += OnBuildBase;
     }
 
     private void OnDisable()
     {
-        Bot.FlagReached -= OnBuildBase;
+        BotColonizer.FlagReached -= OnBuildBase;
     }
 
     public void SelectBase()
@@ -94,8 +96,9 @@ public class BaseCreator : MonoBehaviour
         _tempFlag = null;
         _isFlagCreated = false;
 
-        Bot.transform.parent = newBase.transform;
-        Bot.SetTargetPosition(newBase.transform);
+        BotColonizer.SetTargetPosition(newBase.transform);
+        BotColonizer = null;
+        BaseBuilded?.Invoke();
         print("Created new base");
     }
 

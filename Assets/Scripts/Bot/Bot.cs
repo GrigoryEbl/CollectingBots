@@ -8,19 +8,18 @@ using UnityEngine.Events;
 public class Bot : MonoBehaviour
 {
     private Transform _target;
-    private Transform _transform;
     private Mover _mover;
     private bool _isFree;
     private Base _base;
     private Resource _resource;
 
+    public Base Base => _base;
     public bool IsFree => _isFree;
 
     public event Action FlagReached;
 
     private void Awake()
     {
-        _transform = transform;
         _mover = GetComponent<Mover>();
         _base = GetComponentInParent<Base>();
         _isFree = true;
@@ -44,6 +43,11 @@ public class Bot : MonoBehaviour
         _mover.SetTarget(_target);
     }
 
+    public void SetNewBase(Base newBase)
+    {
+        _base = newBase;
+    }
+
     private void DeliveredResource()
     {
         for (int i = 0; i < transform.childCount; i++)
@@ -65,6 +69,7 @@ public class Bot : MonoBehaviour
             _resource = resource;
             _target.parent = transform;
             _target = _base.transform;
+
             _mover.SetTarget(_target);
         }
         else if (_target == _base.transform)
@@ -76,16 +81,6 @@ public class Bot : MonoBehaviour
             _isFree = true;
             print("Reached Flag");
             FlagReached?.Invoke();
-            Wait();
         }
-        else
-        {
-            return;
-        }
-    }
-
-    private void Wait()
-    {
-        _target = null;
     }
 }
