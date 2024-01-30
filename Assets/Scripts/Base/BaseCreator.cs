@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 
-[RequireComponent(typeof(Camera))]
 public class BaseCreator : MonoBehaviour
 {
     [SerializeField] private Flag _flagPrefab;
@@ -9,22 +8,25 @@ public class BaseCreator : MonoBehaviour
     [SerializeField] private float _minDistanceToOtherBase;
     [SerializeField] private LayerMask _layerMask;
 
+    public Bot BotColonizer;
+    private Base _base;
     private Camera _camera;
     private Flag _tempFlag;
-
     private bool _isSelectedBase;
     private bool _isFlagCreated;
 
-    public Bot BotColonizer { get; set; }
     public bool IsFlagCreated => _isFlagCreated;
     public Flag Flag => _tempFlag;
 
     public event Action BaseBuilded;
 
-    private void Start()
+    private void Awake()
     {
+        _base = GetComponent<Base>();
+        BotColonizer = _base.GetBotColonizer();
         _camera = FindObjectOfType<Camera>();
         _isSelectedBase = false;
+        _isFlagCreated = false;
     }
 
     private void Update()
@@ -58,7 +60,7 @@ public class BaseCreator : MonoBehaviour
             _isSelectedBase = true;
         }
     }
-
+        
     private void ScanPresenceOtherBase()
     {
         Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
@@ -83,9 +85,11 @@ public class BaseCreator : MonoBehaviour
     private void CreateFlag(RaycastHit hitInfo)
     {
         var flag = Instantiate(_flagPrefab, hitInfo.point, Quaternion.identity);
+
+        _tempFlag = flag;
         _isFlagCreated = true;
         _isSelectedBase = false;
-        _tempFlag = flag;
+
         print("Created flag");
     }
 
@@ -97,8 +101,8 @@ public class BaseCreator : MonoBehaviour
         _isFlagCreated = false;
 
         BotColonizer.SetTargetPosition(newBase.transform);
-        BotColonizer = null;
         BaseBuilded?.Invoke();
+
         print("Created new base");
     }
 

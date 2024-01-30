@@ -30,26 +30,27 @@ public class Base : MonoBehaviour
     private bool _canBuildBase;
     private bool _isBaseSelect;
 
+    public Bot BotColonizer => _botColonizer;
     public int CountResources => _countResources;
 
     public event Action ResourcesChange;
 
     private void Awake()
     {
-        _countResources = 0;
-        ResourcesChange?.Invoke();
-
-        _canBuildBase = false;
-        _isBaseSelect = false;
-
         _transform = transform;
-        _baseCtreator = GetComponent<BaseCreator>();
-
-        SetParentBot();
+       SetParentBot();
         GetBots();
         _botColonizer = _bots.Peek();
-        _currentCountBots = _bots.Count;
+        _baseCtreator = GetComponent<BaseCreator>();
+    }
 
+    private void Start()
+    {
+        _canBuildBase = false;
+        _isBaseSelect = false;
+        _countResources = 0;
+        ResourcesChange?.Invoke();
+        _currentCountBots = _bots.Count;
         StartCoroutine(Scan());
     }
 
@@ -60,7 +61,6 @@ public class Base : MonoBehaviour
         if (_currentCountBots < _maxUnits && _canBuildBase == false)
             CreateNewUnit();
 
-        GetBots();
         SetTask();
     }
 
@@ -89,6 +89,11 @@ public class Base : MonoBehaviour
         print("Selected base");
     }
 
+    public Bot GetBotColonizer()
+    {
+        return _botColonizer;
+    }
+
     private void OnSetNewBotColonizer()
     {
         _botColonizer = _bots.Peek();
@@ -113,6 +118,11 @@ public class Base : MonoBehaviour
 
     private void SetTask()
     {
+        if (_bots == null)
+            return;
+
+        GetBots();
+
         for (int i = 0; i < _bots.Count; i++)
         {
             if (_bots.Peek().IsFree)
@@ -193,7 +203,7 @@ public class Base : MonoBehaviour
     private void SendBotToBuildBase(Bot bot)
     {
         _canBuildBase = false;
-        _baseCtreator.BotColonizer = bot;
+
         bot.SetTargetPosition(_baseCtreator.Flag.transform);
 
         _countResources -= _countResourcesToBuildBase;
