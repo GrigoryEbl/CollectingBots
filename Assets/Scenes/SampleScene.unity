@@ -1102,17 +1102,6 @@ MonoBehaviour:
   _resourcePrefab: {fileID: 8060145598037500539, guid: 5f166f58a0da71448bc89c228f8ccb1f, type: 3}
   _delay: 3
   _spawnRadius: 10
---- !u!114 &1255266439 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3597076710473563587, guid: fb5c92cc2599fc2489ebfe067f804f37, type: 3}
-  m_PrefabInstance: {fileID: 3597076710583798387}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92b6ea1581f12014b8ebaa326c9404b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1257807311
 GameObject:
   m_ObjectHideFlags: 0
@@ -1651,8 +1640,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6c5264d40b20fc4b900479672791f94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _base: {fileID: 1255266439}
-  _baseCreator: {fileID: 0}
+  _base: {fileID: 3597076710473563587, guid: fb5c92cc2599fc2489ebfe067f804f37, type: 3}
+  _baseCreator: {fileID: 5701359718957173450, guid: fb5c92cc2599fc2489ebfe067f804f37, type: 3}
+  _bot: {fileID: 2180156757652463302, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
 --- !u!1 &1922808619
 GameObject:
   m_ObjectHideFlags: 0

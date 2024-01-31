@@ -7,23 +7,21 @@ public class Base : MonoBehaviour
 {
     [SerializeField] private Bot _prefab;
     [SerializeField] private float _radius;
-    [SerializeField] private float _scanRadius;
     [SerializeField] private LayerMask _botLayer;
-    [SerializeField] private LayerMask _resourceLayer;
 
     private Queue<Bot> _bots = new();
     private Queue<Resource> _resources = new();
 
     private Transform _transform;
+    private BaseCreator _baseCreator;
+    private Bot _botColonizer;
+    private Scaner _scaner;
 
-     private BaseCreator _baseCreator;
     private int _countResources;
     private int _countResourcesToBuildBase = 5;
     private int _countResourcesToCreateBot = 3;
     private int _maxUnits = 5;
     private int _currentCountBots = 0;
-
-    private float _scanDelay = 2f;
 
     private bool _canBuildBase;
     private bool _isBaseSelect;
@@ -32,21 +30,25 @@ public class Base : MonoBehaviour
 
     public event Action ResourcesChange;
 
-    public void Initialize()
+    private void Awake()
     {
+        _baseCreator = GetComponent<BaseCreator>();
         _transform = transform;
         SetParentBot();
         FindBotsInBase();
-        _baseCreator.GetComponentInChildren<BaseCreator>();
-        _baseCreator.Initialize();
-        _baseCreator.BotColonizer = _bots.Peek();
+        _botColonizer = _bots.Peek();
+    }
 
+    private void OnEnable() => _botColonizer.FlagReached += _baseCreator.OnBuildBase;
+    private void OnDisable() => _botColonizer.FlagReached -= _baseCreator.OnBuildBase;
+
+    private void Start()
+    {
         _canBuildBase = false;
         _isBaseSelect = false;
         _countResources = 0;
         ResourcesChange?.Invoke();
         _currentCountBots = _bots.Count;
-        StartCoroutine(Scan());
     }
 
     private void Update()
@@ -62,9 +64,7 @@ public class Base : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
-
         Gizmos.DrawWireSphere(transform.position, _radius);
-        Gizmos.DrawWireSphere(transform.position, _scanRadius);
     }
 
     private void OnMouseDown()
@@ -80,28 +80,15 @@ public class Base : MonoBehaviour
         ResourcesChange?.Invoke();
     }
 
-    private void SetNewBotColonizer()
-    {
-        FindBotsInBase();
-        _baseCreator.BotColonizer = _bots.Peek();
-    }
-
-    private IEnumerator Scan()
-    {
-        while (true)
-        {
-            Collider[] resourceColliders = Physics.OverlapSphere(_transform.position, _scanRadius, _resourceLayer);
-            GetAvailableResource(resourceColliders);
-
-            yield return new WaitForSeconds(_scanDelay);
-        }
-    }
-
     private void SetTask()
     {
         if (_bots == null)
             return;
 
+        if (_resources == null)
+            return;
+
+        SetAvailableResource();
         FindBotsInBase();
 
         for (int i = 0; i < _bots.Count; i++)
@@ -114,9 +101,9 @@ public class Base : MonoBehaviour
                     _resources.Dequeue();
                 }
 
-                if (_canBuildBase && _isBaseSelect && _baseCreator.BotColonizer == _bots.Peek() && _countResources >= _countResourcesToBuildBase)
+                if (_canBuildBase && _isBaseSelect && _countResources >= _countResourcesToBuildBase)
                 {
-                    SendBotToBuildBase(_baseCreator.BotColonizer);
+                    SendBotToBuildBase(_botColonizer);
                 }
 
                 _bots.Dequeue();
@@ -150,8 +137,10 @@ public class Base : MonoBehaviour
         }
     }
 
-    private void GetAvailableResource(Collider[] resources)
+    private void SetAvailableResource()
     {
+        Collider[] resources = _scaner.GetColliders();
+
         if (resources != null)
         {
             _resources.Clear();
@@ -175,7 +164,7 @@ public class Base : MonoBehaviour
         {
             if (item.TryGetComponent(out Bot bot))
             {
-                bot.transform.parent = transform;
+                bot.transform.SetParent(transform);
                 return;
             }
         }
@@ -192,5 +181,11 @@ public class Base : MonoBehaviour
 
         _isBaseSelect = false;
         SetNewBotColonizer();
+    }
+
+    private void SetNewBotColonizer()
+    {
+        FindBotsInBase();
+        _botColonizer = _bots.Peek();
     }
 }

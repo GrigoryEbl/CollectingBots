@@ -10,7 +10,6 @@ public class Bot : MonoBehaviour
     private Base _base;
     private Resource _resource;
 
-    public Base Base => _base;
     public bool IsFree => _isFree;
 
     public event Action FlagReached;
