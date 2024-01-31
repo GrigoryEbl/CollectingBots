@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 [RequireComponent(typeof(Mover))]
 public class Bot : MonoBehaviour
@@ -69,7 +66,6 @@ public class Bot : MonoBehaviour
             _resource = resource;
             _target.parent = transform;
             _target = _base.transform;
-
             _mover.SetTarget(_target);
         }
         else if (_target == _base.transform)
@@ -79,8 +75,9 @@ public class Bot : MonoBehaviour
         else if (_target != null && _target.TryGetComponent(out Flag flag))
         {
             _isFree = true;
-            print("Reached Flag");
             FlagReached?.Invoke();
+
+            print("Reached Flag");
         }
     }
 }

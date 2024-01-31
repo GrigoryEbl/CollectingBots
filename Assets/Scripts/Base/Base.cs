@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(BaseCreator))]
 public class Base : MonoBehaviour
 {
     [SerializeField] private Bot _prefab;
@@ -16,9 +15,8 @@ public class Base : MonoBehaviour
     private Queue<Resource> _resources = new();
 
     private Transform _transform;
-    private BaseCreator _baseCtreator;
-    private Bot _botColonizer;
 
+     private BaseCreator _baseCreator;
     private int _countResources;
     private int _countResourcesToBuildBase = 5;
     private int _countResourcesToCreateBot = 3;
@@ -30,22 +28,19 @@ public class Base : MonoBehaviour
     private bool _canBuildBase;
     private bool _isBaseSelect;
 
-    public Bot BotColonizer => _botColonizer;
     public int CountResources => _countResources;
 
     public event Action ResourcesChange;
 
-    private void Awake()
+    public void Initialize()
     {
         _transform = transform;
-       SetParentBot();
-        GetBots();
-        _botColonizer = _bots.Peek();
-        _baseCtreator = GetComponent<BaseCreator>();
-    }
+        SetParentBot();
+        FindBotsInBase();
+        _baseCreator.GetComponentInChildren<BaseCreator>();
+        _baseCreator.Initialize();
+        _baseCreator.BotColonizer = _bots.Peek();
 
-    private void Start()
-    {
         _canBuildBase = false;
         _isBaseSelect = false;
         _countResources = 0;
@@ -56,7 +51,7 @@ public class Base : MonoBehaviour
 
     private void Update()
     {
-        _canBuildBase = _baseCtreator.IsFlagCreated;
+        _canBuildBase = _baseCreator.IsFlagCreated;
 
         if (_currentCountBots < _maxUnits && _canBuildBase == false)
             CreateNewUnit();
@@ -72,37 +67,23 @@ public class Base : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, _scanRadius);
     }
 
-    private void OnEnable()
-    {
-        _baseCtreator.BaseBuilded += OnSetNewBotColonizer;
-    }
-
-    private void OnDisable()
-    {
-        _baseCtreator.BaseBuilded -= OnSetNewBotColonizer;
-    }
-
     private void OnMouseDown()
     {
-        _baseCtreator.SelectBase();
+        _baseCreator.SelectBase();
         _isBaseSelect = true;
         print("Selected base");
-    }
-
-    public Bot GetBotColonizer()
-    {
-        return _botColonizer;
-    }
-
-    private void OnSetNewBotColonizer()
-    {
-        _botColonizer = _bots.Peek();
     }
 
     public void TakeResource()
     {
         _countResources++;
         ResourcesChange?.Invoke();
+    }
+
+    private void SetNewBotColonizer()
+    {
+        FindBotsInBase();
+        _baseCreator.BotColonizer = _bots.Peek();
     }
 
     private IEnumerator Scan()
@@ -121,7 +102,7 @@ public class Base : MonoBehaviour
         if (_bots == null)
             return;
 
-        GetBots();
+        FindBotsInBase();
 
         for (int i = 0; i < _bots.Count; i++)
         {
@@ -133,9 +114,9 @@ public class Base : MonoBehaviour
                     _resources.Dequeue();
                 }
 
-                if (_canBuildBase && _isBaseSelect && _botColonizer == _bots.Peek() && _countResources >= _countResourcesToBuildBase)
+                if (_canBuildBase && _isBaseSelect && _baseCreator.BotColonizer == _bots.Peek() && _countResources >= _countResourcesToBuildBase)
                 {
-                    SendBotToBuildBase(_botColonizer);
+                    SendBotToBuildBase(_baseCreator.BotColonizer);
                 }
 
                 _bots.Dequeue();
@@ -150,12 +131,12 @@ public class Base : MonoBehaviour
             _countResources -= _countResourcesToCreateBot;
             ResourcesChange?.Invoke();
             Instantiate(_prefab, transform.position, Quaternion.identity, transform);
-            GetBots();
+            FindBotsInBase();
             _currentCountBots = _bots.Count;
         }
     }
 
-    private void GetBots()
+    private void FindBotsInBase()
     {
         _bots.Clear();
 
@@ -204,11 +185,12 @@ public class Base : MonoBehaviour
     {
         _canBuildBase = false;
 
-        bot.SetTargetPosition(_baseCtreator.Flag.transform);
+        bot.SetTargetPosition(_baseCreator.Flag.transform);
 
         _countResources -= _countResourcesToBuildBase;
         ResourcesChange?.Invoke();
 
         _isBaseSelect = false;
+        SetNewBotColonizer();
     }
 }

@@ -14,7 +14,7 @@ public class Mover : MonoBehaviour
 
     public event UnityAction TargetReached;
 
-    private void Start()
+    private void Awake()
     {
         _transform = transform;
     }

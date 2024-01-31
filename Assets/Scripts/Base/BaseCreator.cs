@@ -9,7 +9,6 @@ public class BaseCreator : MonoBehaviour
     [SerializeField] private LayerMask _layerMask;
 
     public Bot BotColonizer;
-    private Base _base;
     private Camera _camera;
     private Flag _tempFlag;
     private bool _isSelectedBase;
@@ -18,12 +17,8 @@ public class BaseCreator : MonoBehaviour
     public bool IsFlagCreated => _isFlagCreated;
     public Flag Flag => _tempFlag;
 
-    public event Action BaseBuilded;
-
-    private void Awake()
+    public void Initialize()
     {
-        _base = GetComponent<Base>();
-        BotColonizer = _base.GetBotColonizer();
         _camera = FindObjectOfType<Camera>();
         _isSelectedBase = false;
         _isFlagCreated = false;
@@ -60,7 +55,7 @@ public class BaseCreator : MonoBehaviour
             _isSelectedBase = true;
         }
     }
-        
+
     private void ScanPresenceOtherBase()
     {
         Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
@@ -96,12 +91,17 @@ public class BaseCreator : MonoBehaviour
     private void OnBuildBase()
     {
         var newBase = Instantiate(_basePrefab, _tempFlag.transform.position, Quaternion.identity);
+        if (newBase.TryGetComponent(out BaseCreator baseCreator))
+        {
+            newBase.Initialize();
+            baseCreator.Initialize();
+        }
+
         _tempFlag.DestroyObject();
         _tempFlag = null;
         _isFlagCreated = false;
 
         BotColonizer.SetTargetPosition(newBase.transform);
-        BaseBuilded?.Invoke();
 
         print("Created new base");
     }
