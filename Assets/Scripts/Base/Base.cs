@@ -33,16 +33,26 @@ public class Base : MonoBehaviour
 
     private void Awake()
     {
-        _baseCreator = GetComponent<BaseCreator>();
+        _baseCreator = FindObjectOfType<BaseCreator>();
         _scaner = GetComponent<Scaner>();
         _transform = transform;
         SetParentBot();
         FindBotsInBase();
         _botColonizer = _bots.Peek();
+        _bots.Peek().Base = this;
     }
 
-    private void OnEnable() => _botColonizer.FlagReached += _baseCreator.OnBuildBase;
-    private void OnDisable() => _botColonizer.FlagReached -= _baseCreator.OnBuildBase;
+    private void OnEnable()
+    {
+        _botColonizer.FlagReached += _baseCreator.OnBuildBase;
+        _botColonizer.FlagReached += OnSetNewBotColonizer;
+    }
+
+    private void OnDisable()
+    {
+        _botColonizer.FlagReached -= _baseCreator.OnBuildBase;
+        _botColonizer.FlagReached -= OnSetNewBotColonizer;
+    }
 
     private void Start()
     {
@@ -57,7 +67,6 @@ public class Base : MonoBehaviour
     private void Update()
     {
         _canBuildBase = _baseCreator.IsFlagCreated;
-        print(_resources.Count);
         SetTask();
     }
 
@@ -103,6 +112,7 @@ public class Base : MonoBehaviour
 
                 if (_canBuildBase && _countResources >= _countResourcesToBuildBase)
                 {
+                    _botColonizer.FlagReached += _baseCreator.OnBuildBase;
                     SendBotToBuildBase(_botColonizer);
                 }
 
@@ -186,12 +196,12 @@ public class Base : MonoBehaviour
         ResourcesChange?.Invoke();
 
         _isBaseSelect = false;
-        SetNewBotColonizer();
     }
 
-    private void SetNewBotColonizer()
+    private void OnSetNewBotColonizer()
     {
         FindBotsInBase();
         _botColonizer = _bots.Peek();
+        _botColonizer.FlagReached += _baseCreator.OnBuildBase;
     }
 }

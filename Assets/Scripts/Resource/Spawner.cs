@@ -34,8 +34,9 @@ public class Spawner : MonoBehaviour
 
     private void InstantiateResource()
     {
+        float height = 1f;
         Vector2 RandomPosition = Random.insideUnitCircle * _spawnRadius;
 
-        Instantiate(_resourcePrefab, new Vector3(_transform.position.x + RandomPosition.x, 0, _transform.position.z + RandomPosition.y), Quaternion.identity, _transform);
+        Instantiate(_resourcePrefab, new Vector3(_transform.position.x + RandomPosition.x, height, _transform.position.z + RandomPosition.y), Quaternion.identity, _transform);
     }
 }

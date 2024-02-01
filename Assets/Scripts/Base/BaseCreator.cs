@@ -4,17 +4,16 @@ using UnityEngine;
 public class BaseCreator : MonoBehaviour
 {
     [SerializeField] private Flag _flagPrefab;
-    [SerializeField] private Base _basePrefab;
+    [SerializeField] private GameObject _basePrefab;
     [SerializeField] private float _minDistanceToOtherBase;
     [SerializeField] private LayerMask _layerMask;
 
     private Camera _camera;
-    private Flag _tempFlag;
     private bool _isSelectedBase;
     private bool _isFlagCreated;
 
     public bool IsFlagCreated => _isFlagCreated;
-    public Flag Flag => _tempFlag;
+    public Flag Flag { get; private set; }
 
     private void Awake()
     {
@@ -70,7 +69,7 @@ public class BaseCreator : MonoBehaviour
     {
         var flag = Instantiate(_flagPrefab, hitInfo.point, Quaternion.identity);
 
-        _tempFlag = flag;
+        Flag = flag;
         _isFlagCreated = true;
         _isSelectedBase = false;
 
@@ -79,23 +78,22 @@ public class BaseCreator : MonoBehaviour
 
     public void OnBuildBase()
     {
-        var newBase = Instantiate(_basePrefab, _tempFlag.transform.position, Quaternion.identity);
+       var newBase = Instantiate(_basePrefab, Flag.transform.position, Quaternion.identity);
 
-        _tempFlag.DestroyObject();
-        _tempFlag = null;
+        Flag.DestroyObject();
+        Flag = null;
         _isFlagCreated = false;
-
 
         print("Created new base");
     }
 
     private void TransposeFlag()
     {
-        if (_tempFlag != null)
+        if (Flag != null)
         {
-            _tempFlag.DestroyObject();
+            Flag.DestroyObject();
             print("Destroyed Flag");
-            _tempFlag = null;
+            Flag = null;
             _isFlagCreated = false;
         }
 

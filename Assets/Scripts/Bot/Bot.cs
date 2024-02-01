@@ -4,10 +4,10 @@ using UnityEngine;
 [RequireComponent(typeof(Mover))]
 public class Bot : MonoBehaviour
 {
+    public Base Base;
     private Transform _target;
     private Mover _mover;
     private bool _isFree;
-    private Base _base;
     private Resource _resource;
 
     public bool IsFree => _isFree;
@@ -17,7 +17,7 @@ public class Bot : MonoBehaviour
     private void Awake()
     {
         _mover = GetComponent<Mover>();
-        _base = GetComponentInParent<Base>();
+        Base = GetComponentInParent<Base>();
         _isFree = true;
     }
 
@@ -41,7 +41,7 @@ public class Bot : MonoBehaviour
 
     public void SetNewBase(Base newBase)
     {
-        _base = newBase;
+        Base = newBase;
     }
 
     private void DeliveredResource()
@@ -50,7 +50,7 @@ public class Bot : MonoBehaviour
         {
             if (transform.GetChild(i).TryGetComponent(out Resource resource))
             {
-                _base.TakeResource();
+                Base.TakeResource();
                 Destroy(resource.gameObject);
                 _resource = null;
                 _isFree = true;
@@ -64,10 +64,10 @@ public class Bot : MonoBehaviour
         {
             _resource = resource;
             _target.parent = transform;
-            _target = _base.transform;
+            _target = Base.transform;
             _mover.SetTarget(_target);
         }
-        else if (_target == _base.transform)
+        else if (_target == Base.transform)
         {
             DeliveredResource();
         }
