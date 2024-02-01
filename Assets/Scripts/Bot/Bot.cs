@@ -21,15 +21,9 @@ public class Bot : MonoBehaviour
         _isFree = true;
     }
 
-    private void OnEnable()
-    {
-        _mover.TargetReached += OnReachedTarget;
-    }
+    private void OnEnable() => _mover.TargetReached += OnReachedTarget;
 
-    private void OnDisable()
-    {
-        _mover.TargetReached -= OnReachedTarget;
-    }
+    private void OnDisable() => _mover.TargetReached -= OnReachedTarget;
 
     public void SetTargetPosition(Transform target)
     {
@@ -37,11 +31,6 @@ public class Bot : MonoBehaviour
         _isFree = false;
 
         _mover.SetTarget(_target);
-    }
-
-    public void SetNewBase(Base newBase)
-    {
-        Base = newBase;
     }
 
     private void DeliveredResource()

@@ -8,8 +8,8 @@ public class Mover : MonoBehaviour
     [SerializeField] private float _speed;
 
     private Transform _transform;
-    private float _minCatchDistance = 2;
     private Transform _target;
+    private float _minCatchDistance = 2;
 
     public event UnityAction TargetReached;
 
@@ -40,7 +40,5 @@ public class Mover : MonoBehaviour
             TargetReached?.Invoke();
             yield return null;
         }
-    }
-
-    
+    } 
 }

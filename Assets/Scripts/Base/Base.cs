@@ -10,7 +10,7 @@ public class Base : MonoBehaviour
     [SerializeField] private LayerMask _botLayer;
 
     private Queue<Bot> _bots = new();
-    public Queue<Resource> _resources = new();
+    private Queue<Resource> _resources = new();
 
     private Transform _transform;
     private BaseCreator _baseCreator;
@@ -105,12 +105,10 @@ public class Base : MonoBehaviour
         {
             if (_bots.Peek().IsFree)
             {
-
-                if (_resources.TryPeek(out Resource resource) == true)
+                if (_resources.TryPeek(out Resource resource))
                     _bots.Peek().SetTargetPosition(_resources.Dequeue().transform);
 
-
-                if (_canBuildBase && _countResources >= _countResourcesToBuildBase)
+                if (_canBuildBase && _countResources >= _countResourcesToBuildBase && _isBaseSelect)
                 {
                     _botColonizer.FlagReached += _baseCreator.OnBuildBase;
                     SendBotToBuildBase(_botColonizer);
@@ -125,7 +123,7 @@ public class Base : MonoBehaviour
     {
         while (_currentCountBots < _maxUnits)
         {
-            if (_countResources >= _countResourcesToCreateBot && _canBuildBase == false)
+            if (_canBuildBase == false && _countResources >= _countResourcesToCreateBot)
             {
                 _countResources -= _countResourcesToCreateBot;
                 ResourcesChange?.Invoke();
@@ -133,8 +131,7 @@ public class Base : MonoBehaviour
                 Instantiate(_prefab, transform.position, Quaternion.identity, transform);
 
                 FindBotsInBase();
-                _currentCountBots = _bots.Count;
-
+                _currentCountBots++;
             }
 
             yield return new WaitForSeconds(_delaySpawnBots);
@@ -158,6 +155,11 @@ public class Base : MonoBehaviour
     private void SetAvailableResource()
     {
         Collider[] colliders = _scaner.GetScanigItems();
+
+        if (colliders == null)
+            return;
+
+        colliders = GetSortedToDistanceColliders(colliders);
 
         for (int i = 0; i < colliders.Length; i++)
         {
@@ -189,13 +191,20 @@ public class Base : MonoBehaviour
     private void SendBotToBuildBase(Bot bot)
     {
         _canBuildBase = false;
-
+        _currentCountBots--;
         bot.SetTargetPosition(_baseCreator.Flag.transform);
-
         _countResources -= _countResourcesToBuildBase;
         ResourcesChange?.Invoke();
-
         _isBaseSelect = false;
+
+        for (int i = 0; i < bot.transform.childCount; i++)
+        {
+            if (bot.transform.GetChild(i).TryGetComponent(out Resource resource))
+            {
+                Destroy(resource.gameObject);
+                //resource = null;
+            }
+        }
     }
 
     private void OnSetNewBotColonizer()
@@ -203,5 +212,25 @@ public class Base : MonoBehaviour
         FindBotsInBase();
         _botColonizer = _bots.Peek();
         _botColonizer.FlagReached += _baseCreator.OnBuildBase;
+    }
+
+    private Collider[] GetSortedToDistanceColliders(Collider[] colliders)
+    {
+        Collider temp = null;
+
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            for (int j = 0; j < colliders.Length-1; j++)
+            {
+                if (Vector3.Distance(_transform.position, colliders[j].transform.position) > Vector3.Distance(_transform.position, colliders[j + 1].transform.position))
+                {
+                    temp = colliders[j + 1];
+                    colliders[j + 1] = colliders[j];
+                    colliders[j] = temp;
+                }
+            }
+        }
+
+        return colliders;
     }
 }
