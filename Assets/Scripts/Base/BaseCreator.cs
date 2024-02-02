@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class BaseCreator : MonoBehaviour
 {
+    [SerializeField] private Camera _camera;
     [SerializeField] private Flag _flagPrefab;
     [SerializeField] private Base _basePrefab;
     [SerializeField] private float _minDistanceToOtherBase;
     [SerializeField] private LayerMask _layerMask;
 
-    private Camera _camera;
     private bool _isSelectedBase;
     private bool _isFlagCreated;
 
@@ -17,7 +17,6 @@ public class BaseCreator : MonoBehaviour
 
     private void Awake()
     {
-        _camera = FindObjectOfType<Camera>();
         _isSelectedBase = false;
         _isFlagCreated = false;
     }

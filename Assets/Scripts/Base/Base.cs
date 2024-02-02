@@ -3,17 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Scaner))]
 public class Base : MonoBehaviour
 {
     [SerializeField] private Bot _prefab;
+    [SerializeField] private BaseCreator _baseCreator;
     [SerializeField] private float _radius;
-    [SerializeField] private LayerMask _botLayer;
+    [SerializeField] private LayerMask _layerMask;
 
     private Queue<Bot> _bots = new();
     private Queue<Resource> _resources = new();
 
     private Transform _transform;
-    private BaseCreator _baseCreator;
     private Bot _botColonizer;
     private Scaner _scaner;
 
@@ -33,7 +34,6 @@ public class Base : MonoBehaviour
 
     private void Awake()
     {
-        _baseCreator = FindObjectOfType<BaseCreator>();
         _scaner = GetComponent<Scaner>();
         _transform = transform;
         SetParentBot();
@@ -176,7 +176,7 @@ public class Base : MonoBehaviour
 
     private void SetParentBot()
     {
-        Collider[] bots = Physics.OverlapSphere(transform.position, _radius, _botLayer);
+        Collider[] bots = Physics.OverlapSphere(transform.position, _radius, _layerMask);
 
         foreach (Collider item in bots)
         {
@@ -202,7 +202,6 @@ public class Base : MonoBehaviour
             if (bot.transform.GetChild(i).TryGetComponent(out Resource resource))
             {
                 Destroy(resource.gameObject);
-                //resource = null;
             }
         }
     }
@@ -220,9 +219,10 @@ public class Base : MonoBehaviour
 
         for (int i = 0; i < colliders.Length; i++)
         {
-            for (int j = 0; j < colliders.Length-1; j++)
+            for (int j = 0; j < colliders.Length - 1; j++)
             {
-                if (Vector3.Distance(_transform.position, colliders[j].transform.position) > Vector3.Distance(_transform.position, colliders[j + 1].transform.position))
+                if (Vector3.Distance(_transform.position, colliders[j].transform.position)
+                  > Vector3.Distance(_transform.position, colliders[j + 1].transform.position))
                 {
                     temp = colliders[j + 1];
                     colliders[j + 1] = colliders[j];
