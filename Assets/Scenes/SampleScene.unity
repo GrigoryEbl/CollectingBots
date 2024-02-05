@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18028334, g: 0.22571328, b: 0.3069217, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -439,7 +439,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6117629422899041066, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 3.57
       objectReference: {fileID: 0}
     - target: {fileID: 6117629422899041066, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1068,7 +1068,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6117629422899041066, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -3.38
       objectReference: {fileID: 0}
     - target: {fileID: 6117629422899041066, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1517,7 +1517,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6117629422899041066, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -3.82
       objectReference: {fileID: 0}
     - target: {fileID: 6117629422899041066, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1671,9 +1671,21 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1005952246575661408, guid: fb5c92cc2599fc2489ebfe067f804f37, type: 3}
+      propertyPath: _botPrefab
+      value: 
+      objectReference: {fileID: 2180156757652463302, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
+    - target: {fileID: 1005952246575661408, guid: fb5c92cc2599fc2489ebfe067f804f37, type: 3}
+      propertyPath: _baseRadius
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1005952246575661408, guid: fb5c92cc2599fc2489ebfe067f804f37, type: 3}
       propertyPath: _baseCreator
       value: 
       objectReference: {fileID: 1885462388}
+    - target: {fileID: 1005952246575661408, guid: fb5c92cc2599fc2489ebfe067f804f37, type: 3}
+      propertyPath: _botLayer.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
     - target: {fileID: 1005952246575661409, guid: fb5c92cc2599fc2489ebfe067f804f37, type: 3}
       propertyPath: m_RootOrder
       value: 5
@@ -1934,5 +1946,9 @@ PrefabInstance:
       propertyPath: _camera
       value: 
       objectReference: {fileID: 1906395937}
+    - target: {fileID: 5661632206835709261, guid: 478dcbc8517144b41a166c328f145ccb, type: 3}
+      propertyPath: _baseLayer.m_Bits
+      value: 768
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 478dcbc8517144b41a166c328f145ccb, type: 3}

@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class BaseCreator : MonoBehaviour
 {
-    [SerializeField] private Camera _camera;
     [SerializeField] private Flag _flagPrefab;
     [SerializeField] private Base _basePrefab;
     [SerializeField] private float _minDistanceToOtherBase;
-    [SerializeField] private LayerMask _layerMask;
+    [SerializeField] private LayerMask _baseLayer;
 
+    private Camera _camera;
     private bool _isSelectedBase;
     private bool _isFlagCreated;
 
@@ -17,6 +17,7 @@ public class BaseCreator : MonoBehaviour
 
     private void Awake()
     {
+        _camera = FindObjectOfType<Camera>();
         _isSelectedBase = false;
         _isFlagCreated = false;
     }
@@ -45,8 +46,7 @@ public class BaseCreator : MonoBehaviour
 
     public void OnBuildBase()
     {
-       Instantiate(_basePrefab, Flag.transform.position, Quaternion.identity);
-
+         Instantiate(_basePrefab, Flag.transform.position, Quaternion.identity);
         Flag.DestroyObject();
         Flag = null;
         _isFlagCreated = false;
@@ -60,7 +60,7 @@ public class BaseCreator : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hitInfo))
         {
-            Collider[] colliders = Physics.OverlapSphere(hitInfo.point, _minDistanceToOtherBase, _layerMask);
+            Collider[] colliders = Physics.OverlapSphere(hitInfo.point, _minDistanceToOtherBase, _baseLayer);
 
             foreach (Collider item in colliders)
             {
@@ -80,7 +80,7 @@ public class BaseCreator : MonoBehaviour
         Flag = Instantiate(_flagPrefab, hitInfo.point, Quaternion.identity);
 
         _isFlagCreated = true;
-        
+
 
         print("Created flag");
     }

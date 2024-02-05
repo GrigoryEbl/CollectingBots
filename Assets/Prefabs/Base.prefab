@@ -49,10 +49,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92b6ea1581f12014b8ebaa326c9404b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _prefab: {fileID: 2180156757652463302, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
-  _baseCreator: {fileID: 5661632206835709261, guid: 478dcbc8517144b41a166c328f145ccb, type: 3}
-  _radius: 5
-  _layerMask:
+  _botPrefab: {fileID: 2180156757652463302, guid: 3557bdd10d058bf4b9f7b6d3a0fd270f, type: 3}
+  _baseRadius: 5
+  _botLayer:
     serializedVersion: 2
     m_Bits: 64
 --- !u!114 &1005952246575661414

@@ -13,11 +13,11 @@ public class ResourceShower : MonoBehaviour
         _text = GetComponentInChildren<TMP_Text>();
     }
 
-    private void OnEnable() => _base.ResourcesChange += OnShowText;
+    private void OnEnable() => _base.ResourcesChange += OnResourcesChange;
 
-    private void OnDisable() => _base.ResourcesChange -= OnShowText;
+    private void OnDisable() => _base.ResourcesChange -= OnResourcesChange;
 
-    private void OnShowText()
+    private void OnResourcesChange()
     {
         _text.text = ($"Resources: {_base.CountResources}");
     }

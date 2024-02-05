@@ -18,27 +18,26 @@ public class Mover : MonoBehaviour
         _transform = transform;
     }
 
-    private void Update()
-    {
-        if (_target != null)
-            StartCoroutine(MoveToTarget());
-    }
-
     public void SetTarget(Transform target)
     {
         _target = target;
-        
+        StartCoroutine(MoveToTarget());
     }
 
     private IEnumerator MoveToTarget()
     {
-        _transform.position = Vector3.MoveTowards(_transform.position, _target.position, _speed * Time.deltaTime);
-        _transform.LookAt(_target);
-
-        if (Vector3.Distance(_transform.position, _target.position) <= _minCatchDistance)
+        while (true)
         {
-            TargetReached?.Invoke();
+            _transform.position = Vector3.MoveTowards(_transform.position, _target.position, _speed * Time.deltaTime);
+            _transform.LookAt(_target);
+
+            if (Vector3.Distance(_transform.position, _target.position) <= _minCatchDistance)
+            {
+                TargetReached?.Invoke();
+                break;
+            }
+
             yield return null;
         }
-    } 
+    }
 }

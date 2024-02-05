@@ -6,14 +6,14 @@ using UnityEngine;
 [RequireComponent(typeof(Scaner))]
 public class Base : MonoBehaviour
 {
-    [SerializeField] private Bot _prefab;
-    [SerializeField] private BaseCreator _baseCreator;
-    [SerializeField] private float _radius;
-    [SerializeField] private LayerMask _layerMask;
+    [SerializeField] private Bot _botPrefab;
+    [SerializeField] private float _baseRadius;
+    [SerializeField] private LayerMask _botLayer;
 
     private Queue<Bot> _bots = new();
     private Queue<Resource> _resources = new();
 
+    private BaseCreator _baseCreator;
     private Transform _transform;
     private Bot _botColonizer;
     private Scaner _scaner;
@@ -24,7 +24,6 @@ public class Base : MonoBehaviour
     private int _currentCountBots = 0;
     private int _countResources;
 
-    private float _delaySpawnBots = 1f;
     private bool _canBuildBase;
     private bool _isBaseSelect;
 
@@ -35,8 +34,8 @@ public class Base : MonoBehaviour
     private void Awake()
     {
         _scaner = GetComponent<Scaner>();
+        _baseCreator = FindObjectOfType<BaseCreator>();
         _transform = transform;
-        SetParentBot();
         FindBotsInBase();
         _botColonizer = _bots.Peek();
         _bots.Peek().Base = this;
@@ -61,7 +60,6 @@ public class Base : MonoBehaviour
         _countResources = 0;
         ResourcesChange?.Invoke();
         _currentCountBots = _bots.Count;
-        StartCoroutine(CreateNewUnit());
     }
 
     private void Update()
@@ -73,7 +71,7 @@ public class Base : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, _radius);
+        Gizmos.DrawWireSphere(transform.position, _baseRadius);
     }
 
     private void OnMouseDown()
@@ -86,6 +84,7 @@ public class Base : MonoBehaviour
     public void TakeResource()
     {
         _countResources++;
+        CreateNewUnit();
         ResourcesChange?.Invoke();
     }
 
@@ -119,22 +118,17 @@ public class Base : MonoBehaviour
         }
     }
 
-    private IEnumerator CreateNewUnit()
+    private void CreateNewUnit()
     {
-        while (_currentCountBots < _maxUnits)
+        if (_currentCountBots < _maxUnits && _canBuildBase == false && _countResources >= _countResourcesToCreateBot)
         {
-            if (_canBuildBase == false && _countResources >= _countResourcesToCreateBot)
-            {
-                _countResources -= _countResourcesToCreateBot;
-                ResourcesChange?.Invoke();
+            _countResources -= _countResourcesToCreateBot;
+            ResourcesChange?.Invoke();
 
-                Instantiate(_prefab, transform.position, Quaternion.identity, transform);
+            Instantiate(_botPrefab, transform.position, Quaternion.identity, transform);
 
-                FindBotsInBase();
-                _currentCountBots++;
-            }
-
-            yield return new WaitForSeconds(_delaySpawnBots);
+            FindBotsInBase();
+            _currentCountBots++;
         }
     }
 
@@ -146,7 +140,7 @@ public class Base : MonoBehaviour
         {
             if (transform.GetChild(i).TryGetComponent(out Bot bot))
             {
-                if (Vector3.Distance(bot.transform.position, _transform.position) <= _radius)
+                if (Vector3.Distance(bot.transform.position, _transform.position) <= _baseRadius)
                     _bots.Enqueue(bot);
             }
         }
@@ -174,36 +168,16 @@ public class Base : MonoBehaviour
         }
     }
 
-    private void SetParentBot()
-    {
-        Collider[] bots = Physics.OverlapSphere(transform.position, _radius, _layerMask);
-
-        foreach (Collider item in bots)
-        {
-            if (item.TryGetComponent(out Bot bot))
-            {
-                bot.transform.SetParent(transform);
-                return;
-            }
-        }
-    }
-
     private void SendBotToBuildBase(Bot bot)
     {
-        _canBuildBase = false;
-        _currentCountBots--;
         bot.SetTargetPosition(_baseCreator.Flag.transform);
+        bot.transform.parent = null;
+        _currentCountBots--;
+        _canBuildBase = false;
+        _isBaseSelect = false;
         _countResources -= _countResourcesToBuildBase;
         ResourcesChange?.Invoke();
-        _isBaseSelect = false;
-
-        for (int i = 0; i < bot.transform.childCount; i++)
-        {
-            if (bot.transform.GetChild(i).TryGetComponent(out Resource resource))
-            {
-                Destroy(resource.gameObject);
-            }
-        }
+        CreateNewUnit();
     }
 
     private void OnSetNewBotColonizer()

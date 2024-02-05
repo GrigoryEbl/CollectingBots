@@ -44,10 +44,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d037351ac31a7e4d96bcb5a2a73ea89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _camera: {fileID: 1182549437973141726, guid: dc200a367d601cb4198e367d74b1d86e, type: 3}
   _flagPrefab: {fileID: 2002965277831722436, guid: 14536fd0fd477bc46810674d7f1a5365, type: 3}
   _basePrefab: {fileID: 1005952246575661408, guid: fb5c92cc2599fc2489ebfe067f804f37, type: 3}
   _minDistanceToOtherBase: 15
-  _layerMask:
+  _baseLayer:
     serializedVersion: 2
     m_Bits: 768
