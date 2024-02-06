@@ -8,9 +8,11 @@ public class BaseCreator : MonoBehaviour
     [SerializeField] private float _minDistanceToOtherBase;
     [SerializeField] private LayerMask _baseLayer;
 
+    private Bot _botColonizer;
     private Camera _camera;
     private bool _isSelectedBase;
     private bool _isFlagCreated;
+    private RaycastHit _raycastHit;
 
     public bool IsFlagCreated => _isFlagCreated;
     public Flag Flag { get; private set; }
@@ -26,8 +28,8 @@ public class BaseCreator : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (_isSelectedBase && _isFlagCreated == false)
-                ScanPresenceOtherBase();
+            if (_isSelectedBase && _isFlagCreated == false && ScanPresenceOtherBase() == false)
+                CreateFlag(_raycastHit);
         }
     }
 
@@ -44,9 +46,11 @@ public class BaseCreator : MonoBehaviour
         }
     }
 
-    public void OnBuildBase()
+    public void OnBuildBase(Bot bot)
     {
-         Instantiate(_basePrefab, Flag.transform.position, Quaternion.identity);
+        _botColonizer = bot;
+        Instantiate(_basePrefab, Flag.transform.position, Quaternion.identity);
+
         Flag.DestroyObject();
         Flag = null;
         _isFlagCreated = false;
@@ -54,12 +58,19 @@ public class BaseCreator : MonoBehaviour
         print("Created new base");
     }
 
-    private void ScanPresenceOtherBase()
+    public Bot GetFirstBot()
+    {
+        return _botColonizer;
+    }
+
+    private bool ScanPresenceOtherBase()
     {
         Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(ray, out RaycastHit hitInfo))
         {
+            _raycastHit = hitInfo;
+
             Collider[] colliders = Physics.OverlapSphere(hitInfo.point, _minDistanceToOtherBase, _baseLayer);
 
             foreach (Collider item in colliders)
@@ -67,12 +78,12 @@ public class BaseCreator : MonoBehaviour
                 if (item.TryGetComponent(out Base otherBase))
                 {
                     print("рядом есть другая база");
-                    return;
+                    return true;
                 }
             }
-
-            CreateFlag(hitInfo);
         }
+
+            return false;
     }
 
     private void CreateFlag(RaycastHit hitInfo)

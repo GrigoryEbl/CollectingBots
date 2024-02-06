@@ -12,7 +12,7 @@ public class Bot : MonoBehaviour
 
     public bool IsFree => _isFree;
 
-    public event Action FlagReached;
+    public event Action<Bot> FlagReached;
 
     private void Awake()
     {
@@ -57,7 +57,7 @@ public class Bot : MonoBehaviour
         else if (_target.TryGetComponent(out Flag flag))
         {
             _isFree = true;
-            FlagReached?.Invoke();
+            FlagReached?.Invoke(this);
 
             print("Reached Flag");
         }

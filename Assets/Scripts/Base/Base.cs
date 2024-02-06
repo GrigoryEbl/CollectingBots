@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +8,7 @@ public class Base : MonoBehaviour
     [SerializeField] private Bot _botPrefab;
     [SerializeField] private float _baseRadius;
     [SerializeField] private LayerMask _botLayer;
+    [SerializeField] private Bot _firstBot;
 
     private Queue<Bot> _bots = new();
     private Queue<Resource> _resources = new();
@@ -24,7 +24,6 @@ public class Base : MonoBehaviour
     private int _currentCountBots = 0;
     private int _countResources;
 
-    private bool _canBuildBase;
     private bool _isBaseSelect;
 
     public int CountResources => _countResources;
@@ -33,12 +32,18 @@ public class Base : MonoBehaviour
 
     private void Awake()
     {
-        _scaner = GetComponent<Scaner>();
         _baseCreator = FindObjectOfType<BaseCreator>();
         _transform = transform;
-        FindBotsInBase();
-        _botColonizer = _bots.Peek();
-        _bots.Peek().Base = this;
+
+        if (_firstBot == null)
+        {
+            _botColonizer = _baseCreator.GetFirstBot();
+            _botColonizer.transform.parent = transform;
+        }
+        else
+            _botColonizer = _firstBot;
+
+        _botColonizer.Base = this;
     }
 
     private void OnEnable()
@@ -55,16 +60,16 @@ public class Base : MonoBehaviour
 
     private void Start()
     {
-        _canBuildBase = false;
+        _scaner = GetComponent<Scaner>();
         _isBaseSelect = false;
         _countResources = 0;
         ResourcesChange?.Invoke();
+        FindBotsInBase();
         _currentCountBots = _bots.Count;
     }
 
     private void Update()
     {
-        _canBuildBase = _baseCreator.IsFlagCreated;
         SetTask();
     }
 
@@ -78,6 +83,7 @@ public class Base : MonoBehaviour
     {
         _baseCreator.SelectBase();
         _isBaseSelect = true;
+        _botColonizer.FlagReached += _baseCreator.OnBuildBase;
         print("Selected base");
     }
 
@@ -97,30 +103,27 @@ public class Base : MonoBehaviour
             return;
 
         SetAvailableResource();
-
         FindBotsInBase();
 
         for (int i = 0; i < _bots.Count; i++)
         {
-            if (_bots.Peek().IsFree)
+            if (_baseCreator.IsFlagCreated && _isBaseSelect && _countResources >= _countResourcesToBuildBase 
+                && _bots.Peek() == _botColonizer.IsFree)
             {
-                if (_resources.TryPeek(out Resource resource))
-                    _bots.Peek().SetTargetPosition(_resources.Dequeue().transform);
-
-                if (_canBuildBase && _countResources >= _countResourcesToBuildBase && _isBaseSelect)
-                {
-                    _botColonizer.FlagReached += _baseCreator.OnBuildBase;
-                    SendBotToBuildBase(_botColonizer);
-                }
-
+                SendBotToBuildBase(_botColonizer);
                 _bots.Dequeue();
             }
+            else if (_bots.Peek().IsFree)
+            {
+                _bots.Dequeue().SetTargetPosition(_resources.Dequeue().transform);
+            }
+
         }
     }
 
     private void CreateNewUnit()
     {
-        if (_currentCountBots < _maxUnits && _canBuildBase == false && _countResources >= _countResourcesToCreateBot)
+        if (_currentCountBots < _maxUnits && _baseCreator.IsFlagCreated == false && _countResources >= _countResourcesToCreateBot)
         {
             _countResources -= _countResourcesToCreateBot;
             ResourcesChange?.Invoke();
@@ -153,8 +156,6 @@ public class Base : MonoBehaviour
         if (colliders == null)
             return;
 
-        colliders = GetSortedToDistanceColliders(colliders);
-
         for (int i = 0; i < colliders.Length; i++)
         {
             if (colliders[i] != null && colliders[i].TryGetComponent(out Resource resource))
@@ -171,40 +172,17 @@ public class Base : MonoBehaviour
     private void SendBotToBuildBase(Bot bot)
     {
         bot.SetTargetPosition(_baseCreator.Flag.transform);
-        bot.transform.parent = null;
         _currentCountBots--;
-        _canBuildBase = false;
         _isBaseSelect = false;
         _countResources -= _countResourcesToBuildBase;
         ResourcesChange?.Invoke();
         CreateNewUnit();
     }
 
-    private void OnSetNewBotColonizer()
+    private void OnSetNewBotColonizer(Bot bot)
     {
         FindBotsInBase();
         _botColonizer = _bots.Peek();
         _botColonizer.FlagReached += _baseCreator.OnBuildBase;
-    }
-
-    private Collider[] GetSortedToDistanceColliders(Collider[] colliders)
-    {
-        Collider temp = null;
-
-        for (int i = 0; i < colliders.Length; i++)
-        {
-            for (int j = 0; j < colliders.Length - 1; j++)
-            {
-                if (Vector3.Distance(_transform.position, colliders[j].transform.position)
-                  > Vector3.Distance(_transform.position, colliders[j + 1].transform.position))
-                {
-                    temp = colliders[j + 1];
-                    colliders[j + 1] = colliders[j];
-                    colliders[j] = temp;
-                }
-            }
-        }
-
-        return colliders;
     }
 }
